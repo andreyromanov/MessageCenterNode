@@ -10,8 +10,6 @@
     <mapping directory="$USER_HOME$/laravels/ua-tao" vcs="Git" />
     <mapping directory="$USER_HOME$/laravels/ua-tao-admin" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../bao-sklad/Sklad" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../bao-websocket" vcs="Git" />
-    <mapping directory="$USER_HOME$/plugins/TRACKER 07.09.2020" vcs="Git" />
     <mapping directory="$USER_HOME$/plugins/TRACKER 08.04.2020" vcs="Git" />
     <mapping directory="$USER_HOME$/plugins/TRACKER Categories" vcs="Git" />
   </component>

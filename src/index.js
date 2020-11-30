@@ -8,16 +8,19 @@ const bodyParser = require('body-parser');
 const app = express();
 app.use(isAuthorized);
 
-app.use(bodyParser.json());
+//app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const port = 3000;
 
 app.listen(port, () => {
-    console.log(` running on port: 3000`);
+    console.log(`running on port: 3000`);
 });
 
 //Import routes
 const postsRoute = require('./routes/telegram');
+const viberRoutes = require('./routes/viber');
 
-app.use('/posts', postsRoute);
+app.use('/telegram', bodyParser.json(), postsRoute);
+
+app.use('/viber', viberRoutes);

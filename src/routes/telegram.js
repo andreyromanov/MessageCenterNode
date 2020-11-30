@@ -2,25 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 
-const TelegramBot = require('node-telegram-bot-api');
-const mysql = require("mysql2");
 const bodyParser = require('body-parser')
-//polling
-const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {polling: true});
-
-//webhook
-/*const url = 'https://18c8cca0740c.ngrok.io/posts';
-const bot = new TelegramBot(process.env.TELEGRAM_TOKEN);
-bot.setWebHook(`${url}/bot${process.env.TELEGRAM_TOKEN}`);
-// We are receiving updates at the route below!
-router.post(`/bot${process.env.TELEGRAM_TOKEN}`, (req, res) => {
-    bot.processUpdate(req.body);
-    res.sendStatus(200);
-});*/
-//webhook
 
 const helper = require('../helpers')
 const keyboard = require('../keyboard')
+const bot = require('../bots').telegram_bot
 
 const knex = require('knex')({
     client: 'mysql',
@@ -35,106 +21,128 @@ const knex = require('knex')({
 const NodeCache = require( "node-cache" );
 const myCache = new NodeCache();
 
-/*const Database = require('../DB.js')
-
-let database = new Database({
-    host     : process.env.HOST,
-    user     : process.env.db_USER,
-    password : process.env.PASS,
-    database : process.env.DB
-})*/
-
-//dialog from starting conversation
-/*bot.on("text", (message) => {
-
-    const connection = mysql.createConnection({
-        host: "localhost",
-        user: "admin",
-        database: "Message_db",
-        password: "uatao"
-    });
-
-    connection.connect(function(err) {
-        if (err) throw err;
-        connection.query(`SELECT * FROM dialogs`, function (err, result, fields) {
-            if (err) throw err;
-            result.forEach(function (arrayItem) {
-                if(message.text.toLowerCase().includes(arrayItem.key)) {
-                    bot.sendMessage(message.chat.id, arrayItem.answer);
-                }
-            });
-        });
-    });
-});*/
-
-//START command
-/*bot.onText(/\/start/, function onLoveText(msg) {
-  bot.sendMessage(msg.chat.id, 'Добро пожаловать в компанию!');
-
-  let sql = `INSERT INTO telegram_users (chat_id, first_name, last_name, language)
-                                 VALUES (${msg.from.id}, '${msg.from.first_name}', '${msg.from.last_name}', '${msg.from.language_code}')`;
-	  connection.query(sql, function (err, result) {
-      if(err)
-      {
-        if(err.code == 'ER_DUP_ENTRY' || err.errno == 1062)
-        {
-            console.log('Here you can handle duplication')
+const Queue = require('smart-request-balancer');
+const queue = new Queue({
+    rules: {
+        individual: {
+            rate: 1,
+            limit: 1,
+            priority: 1
+        },
+        group: {
+            rate: 20,
+            limit: 60,
+            priority: 1
+        },
+        broadcast: {
+            rate: 30,
+            limit: 1,
+            priority: 2
         }
-        else{
-           console.log(err)
-        }
-      }else{
-         console.log('Inserted 1 row')
-      }
-	  });
+    },
+    overall: {
+        rate: 30,
+        limit: 1
+    }
+});
 
-  console.log(msg.chat.id)
-});*/
+const axios = require('axios');
 
 //получение внешних запросов
 router.get('/', async (req,res) => {
-    console.log('внешний')
+    res.send('get request')
+    bot.sendMessage(391175023, 'Get request').catch((error) => {
+        let code = error.response.body.error_code;
+
+        if(code === 403){
+            console.log(code, 'User has bloced bot (unsubscribed)');
+            //Do action ...
+        }
+    });
 });
 
 //send info to users
-router.post('/', async (req,res) => {
-    console.log(req.headers);
+router.post('/cms-notification', async (req,res) => {
 
-//create new connection
-    /*database.query( 'SELECT * FROM telegram_users' )
-        .then( rows => {
-            console.log(rows);
-        })
-        .catch( err => console.log(err) );*/
-//get data from request to variable
-    let keyName1 = req.body;
-    //console.log(typeof keyName1)
-    keyName1.forEach(function(item, value){
+    const messages = JSON.parse(req.body.data);
 
-        database.query(`SELECT * FROM telegram_users WHERE phone = '${keyName1[value]["phone"]}'`, function (err, result, fields) {
-          if (err) throw err;
-          console.log(result)
-          if(result[0] != null){
-            bot.sendMessage(result[0].chat_id, keyName1[value]["text"])
-            console.log(result[0].id);
-          }
-        });
+    /*if(myCache.has( "users" )){
+        users = myCache.get( "users" )
+    } else{
+        users = await knex.select().table('telegram_users')
+            .then(rows => {
+                myCache.set( "users", rows, 60*60*24 )
+                return rows;
+            }).catch( err => console.log(err) );
 
-        database.query( `SELECT * FROM telegram_users WHERE phone = '${keyName1[value]["phone"]}'` )
-            .then( rows => {
-                console.log('new',rows);
+    }*/
+
+    messages.forEach(function(msg){
+        queue.request((retry) => bot.sendMessage(msg.dialog, msg.text)
+            .then(()=>{
+                bot.sendMessage(helper.getChatId(msg), `Головне меню`, {
+                    reply_markup: {
+                        inline_keyboard: keyboard.home
+                    }
+                })
             })
-            .catch( err => console.log(err) );
-
+            .catch(error => {
+                if (error.response.status === 429) { // We've got 429 - too many requests
+                    return retry(error.response.data.parameters.retry_after) // usually 300 seconds
+                }
+                throw error; // throw error further
+            }), msg.dialog, 'broadcast');
     });
-//send response to server
+    //debug
+    bot.sendMessage(391175023, 'Рассылка уведомлений').catch((error) => {
+        let code = error.response.body.error_code;
+
+        if(code === 403){
+            console.log(code, 'User has blocked bot (unsubscribed)');
+            //Do action ...
+        }
+    });
+    console.log('telegram', req.body)
+    res.send('broadcasted')
+});
+
+router.post('/', async (req,res) => {
+    let users;
+
+    if(myCache.has( "users" )){
+        users = myCache.get( "users" )
+        console.log('cache-users')
+    } else{
+        users = await knex.select().table('telegram_users')
+            .then(rows => {
+                myCache.set( "users", rows, 12000 )
+                return rows;
+            }).catch( err => console.log(err) );
+
+    }
+    let keyName1 = req.body;
+
+    keyName1.forEach(function(item){
+        let user = users.find(x => x.phone == item.phone)
+        //console.log(item.phone, user.user_id)
+        if(user){
+            queue.request((retry) => bot.sendMessage(user.user_id, item.text)
+                .catch(error => {
+                    if (error.response.status === 429) { // We've got 429 - too many requests
+                        return retry(error.response.data.parameters.retry_after) // usually 300 seconds
+                    }
+                    throw error; // throw error further
+                }), user.user_id, 'broadcast');
+        }
+    })
+
+    //send response to server
     res.send('posted')
 });
 
 //USER ENTERS CHAT
 bot.on("text", msg => {
     let { text } = msg;
-
     if (/\/start/.test(text)){
         let option = {
             "parse_mode": "Markdown",
@@ -156,15 +164,9 @@ bot.on("text", msg => {
             }
         })
     } else {
-        //may be removed
-        console.log(msg.message_id, msg.chat.id)
         bot.deleteMessage(msg.chat.id, msg.message_id)
     }
 
-});
-
-bot.on('polling_error', (error) => {
-    //console.log(error);  // => 'EFATAL'
 });
 
 bot.on("contact",(msg)=>{
@@ -173,25 +175,35 @@ bot.on("contact",(msg)=>{
             remove_keyboard: true
         }
     }).then(()=>{
+
+        axios.post(process.env.API + 'telegram/user/store', {
+            user_id: msg.contact.user_id,
+            first_name: msg.contact.first_name,
+            last_name : msg.contact.last_name,
+            phone : msg.contact.phone_number,
+            language : msg.from.language_code,
+            register_date : msg.date,
+            status : 1,
+            company : 'ua-tao'
+        })
+            .then(function (response) {
+                console.log(response.data);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+
         bot.sendMessage(helper.getChatId(msg), `Головне меню`, {
             reply_markup: {
                 inline_keyboard: keyboard.home
             }
         })
     })
-
-    /*let sql = `UPDATE telegram_users SET phone = '${msg.contact.phone_number}' WHERE chat_id = '${msg.chat.id}'`;
-    connection.query(sql, function (err, result) {
-        if(err) console.log(err);
-
-        console.log(msg.contact.phone_number, msg.chat.id)
-    });*/
 });
 
 bot.on('callback_query', async query => {
-    console.log('callback')
-    const { data } = query;
-    const { id } = query.message.chat;
+const { data } = query;
+const { id } = query.message.chat;
 
 if(data !== 'operator' && data !== 'home'){
 
@@ -206,7 +218,6 @@ if(data !== 'operator' && data !== 'home'){
             .where('menu_id',2)
             .then(rows => {
                 myCache.set( "menu", rows, 12000 )
-                console.log('database')
                 return rows;
             }).catch( err => console.log(err) );
     }
@@ -384,5 +395,18 @@ knex('menu_items')
 
     }).catch( err => console.log(err) );
 */
+
+//debug
+bot.on('polling_error', (error) => {
+    //console.log(error);  // => 'EFATAL'
+});
+bot.sendMessage(391175023, 'Launched bot').catch((error) => {
+    let code = error.response.body.error_code;
+
+    if(code === 403){
+        console.log(code, 'User has blocked bot (unsubscribed)');
+        //Do action ...
+    }
+});
 
 module.exports = router;

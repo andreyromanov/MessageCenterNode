@@ -3,14 +3,12 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$USER_HOME$/laravels/MessageCenter/.idea/MessageCenter.iml" filepath="$USER_HOME$/laravels/MessageCenter/.idea/MessageCenter.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../Sklad/.idea/Sklad.iml" filepath="$PROJECT_DIR$/../Sklad/.idea/Sklad.iml" />
-      <module fileurl="file://$USER_HOME$/plugins/TRACKER 07.09.2020/.idea/TRACKER 08.04.2020.iml" filepath="$USER_HOME$/plugins/TRACKER 07.09.2020/.idea/TRACKER 08.04.2020.iml" />
-      <module fileurl="file://$USER_HOME$/plugins/TRACKER CATEGORIES/.idea/TRACKER CATEGORIES.iml" filepath="$USER_HOME$/plugins/TRACKER CATEGORIES/.idea/TRACKER CATEGORIES.iml" />
       <module fileurl="file://$USER_HOME$/bao/admin.bao/.idea/bao.iml" filepath="$USER_HOME$/bao/admin.bao/.idea/bao.iml" />
       <module fileurl="file://$USER_HOME$/bao/bao-client/.idea/bao-client.iml" filepath="$USER_HOME$/bao/bao-client/.idea/bao-client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../bao-websocket/.idea/bao-websocket.iml" filepath="$PROJECT_DIR$/../bao-websocket/.idea/bao-websocket.iml" />
       <module fileurl="file://$USER_HOME$/laravels/fastway/.idea/fastway.iml" filepath="$USER_HOME$/laravels/fastway/.idea/fastway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../node_telegraf_bot/.idea/node_telegraf_bot.iml" filepath="$PROJECT_DIR$/../node_telegraf_bot/.idea/node_telegraf_bot.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/node_telegram_bot.iml" filepath="$PROJECT_DIR$/.idea/node_telegram_bot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../node_viber_bot/.idea/node_viber_bot.iml" filepath="$PROJECT_DIR$/../node_viber_bot/.idea/node_viber_bot.iml" />
       <module fileurl="file://$USER_HOME$/laravels/ua-tao/.idea/ua-tao.iml" filepath="$USER_HOME$/laravels/ua-tao/.idea/ua-tao.iml" />
       <module fileurl="file://$USER_HOME$/laravels/ua-tao-admin/.idea/ua-tao-admin.iml" filepath="$USER_HOME$/laravels/ua-tao-admin/.idea/ua-tao-admin.iml" />
     </modules>

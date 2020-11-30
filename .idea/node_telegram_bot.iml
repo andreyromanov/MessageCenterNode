@@ -10,15 +10,13 @@
     <orderEntry type="module" module-name="bao-client" />
     <orderEntry type="module" module-name="bao-client" />
     <orderEntry type="module" module-name="ua-tao-admin" />
-    <orderEntry type="module" module-name="bao-websocket" />
-    <orderEntry type="module" module-name="TRACKER 08.04.2020" />
-    <orderEntry type="module" module-name="TRACKER 08.04.2020" />
-    <orderEntry type="module" module-name="TRACKER CATEGORIES" />
-    <orderEntry type="module" module-name="Sklad" />
-    <orderEntry type="module" module-name="Sklad" />
-    <orderEntry type="module" module-name="TRACKER 08.04.2020" />
-    <orderEntry type="module" module-name="TRACKER 08.04.2020" />
     <orderEntry type="module" module-name="fastway" />
     <orderEntry type="module" module-name="MessageCenter" />
+    <orderEntry type="module" module-name="node_telegraf_bot" />
+    <orderEntry type="module" module-name="node_telegraf_bot" />
+    <orderEntry type="module" module-name="node_viber_bot" />
+    <orderEntry type="module" module-name="node_viber_bot" />
+    <orderEntry type="module" module-name="node_viber_bot" />
+    <orderEntry type="module" module-name="node_viber_bot" />
   </component>
 </module>
