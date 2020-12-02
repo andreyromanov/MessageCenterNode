@@ -21,7 +21,7 @@ const viber_bot = new ViberBot({
     avatar: "http://viber.com/avatar.jpg"
 });
 
-viber_bot.setWebhook("https://921ff60cb633.ngrok.io/viber")
+viber_bot.setWebhook("https://1e33de7b2199.ngrok.io/viber")
     .then(() => console.log('VIBER - set webhook'))
     .catch(err => console.log(err));
 

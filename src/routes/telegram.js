@@ -175,7 +175,6 @@ bot.on("contact",(msg)=>{
             remove_keyboard: true
         }
     }).then(()=>{
-
         axios.post(process.env.API + 'telegram/user/store', {
             user_id: msg.contact.user_id,
             first_name: msg.contact.first_name,
@@ -271,6 +270,7 @@ if(data !== 'operator' && data !== 'home'){
     let text = data === 'info' ? 'Обери, що тебе цікавить:' : menu.find(x => x.id == data)
 
     bot.deleteMessage(id, query.message.message_id)
+
     bot.sendMessage(id, text.text || text, {
         reply_markup: {
             inline_keyboard: keys
@@ -298,103 +298,6 @@ if(data !== 'operator' && data !== 'home'){
             break
     }
 });
-
-/*
-knex('menu_items')
-    .where('menu_id',2)
-    .then(rows => {
-        let data = rows;
-        console.log('запрос в бд')
-
-        bot.on('callback_query',  async query => {
-            console.log('callback')
-            const { data } = query;
-            const { id } = query.message.chat;
-
-            if(data !== 'operator' && data !== 'home'){
-
-                bot.deleteMessage(id, query.message.message_id)
-
-                let keys = [];
-
-                for(let btn of rows){
-                    if(btn.parent_id == data){
-                        keys.push([{
-                            text: btn.title,
-                            callback_data: btn.id
-                        }])
-                    }  else if(!btn.parent_id && btn.id != data && data == 'info'){
-                        keys.push([{
-                            text: btn.title,
-                            callback_data: btn.id
-                        }])
-
-                    }
-                }
-                let parent = rows.find(x => x.id == data)
-                if(parent === undefined){
-                    keys.push([
-                        {
-                            text: 'Назад',
-                            callback_data: 'home'
-                        }
-                    ])
-                } else if(parent.parent_id == null){
-                    keys.push([
-                        {
-                            text: 'Назад',
-                            callback_data: 'info'
-                        },
-                        {
-                            text: 'Головна',
-                            callback_data: 'home'
-                        }
-                    ])
-                } else {
-                    keys.push([
-                        {
-                            text: 'Назад',
-                            callback_data: parent.parent_id
-                        },
-                        {
-                            text: 'Головна',
-                            callback_data: 'home'
-                        }
-                    ])
-                }
-
-                let text = data === 'info' ? 'Обери, що тебе цікавить:' : rows.find(x => x.id == data)
-
-                bot.sendMessage(id,  text.text || text, {
-                    reply_markup: {
-                        inline_keyboard: keys
-                    }
-                })
-            }
-            switch (data) {
-                case 'operator':
-                    bot.editMessageText( `Перейдіть для зв'зку з оператором: @uatao_bot`, {
-                        chat_id : id,
-                        message_id: query.message.message_id,
-                        reply_markup: {
-                            inline_keyboard: keyboard.operator
-                        }
-                    })
-                    break
-                case 'home':
-                    bot.editMessageText( `Головне меню`, {
-                        chat_id : id,
-                        message_id: query.message.message_id,
-                        reply_markup: {
-                            inline_keyboard: keyboard.home
-                        }
-                    })
-                    break
-            }
-        });
-
-    }).catch( err => console.log(err) );
-*/
 
 //debug
 bot.on('polling_error', (error) => {

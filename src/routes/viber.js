@@ -5,7 +5,6 @@ const bot = require('../bots').viber_bot
 const BotEvents = require('viber-bot').Events;
 const TextMessage = require('viber-bot').Message.Text;
 const KeyboardMessage = require('viber-bot').Message.Keyboard;
-const UrlMessage = require('viber-bot').Message.Url;
 
 const knex = require('knex')({
     client: 'mysql',
@@ -20,41 +19,53 @@ const keyboard = require('../keyboard')
 
 const axios = require('axios');
 
-/*bot.on(BotEvents.CONVERSATION_STARTED, (response) => {
-    /!*bot.getUserDetails(response.userProfile)
-        .then(userDetails => console.log(userDetails))
-        .catch(err => console.log(err));*!/
-})*/
+const Queue = require('smart-request-balancer');
+const queue = new Queue({
+    rules: {
+        individual: {
+            rate: 1,
+            limit: 1,
+            priority: 1
+        },
+        group: {
+            rate: 20,
+            limit: 60,
+            priority: 1
+        },
+        broadcast: {
+            rate: 30,
+            limit: 1,
+            priority: 2
+        }
+    },
+    overall: {
+        rate: 30,
+        limit: 1
+    }
+});
 
+//send info to users
 router.post('/cms-notification', async (req,res) => {
 
-    //const messages = JSON.parse(req.body.data);
+    const messages = JSON.parse(req.body.data);
 
-    /*if(myCache.has( "users" )){
-        users = myCache.get( "users" )
-    } else{
-        users = await knex.select().table('telegram_users')
-            .then(rows => {
-                myCache.set( "users", rows, 60*60*24 )
-                return rows;
-            }).catch( err => console.log(err) );
-
-    }*/
-
-    console.log('viber', req.body)
-
-    /*messages.forEach(function(msg){
-
-        queue.request((retry) => bot.sendMessage(msg.dialog, msg.text)
+    messages.forEach(function(msg){
+        queue.request((retry) => bot.sendMessage({id: msg.dialog}, new TextMessage(msg.text, SAMPLE_KEYBOARD, null, null, null, 3))
+            .then(()=>{
+            })
             .catch(error => {
                 if (error.response.status === 429) { // We've got 429 - too many requests
                     return retry(error.response.data.parameters.retry_after) // usually 300 seconds
                 }
                 throw error; // throw error further
             }), msg.dialog, 'broadcast');
+    });
 
-    });*/
+    //debug
+    const msg = new TextMessage('Рассылка уведомлений', SAMPLE_KEYBOARD, null, null, null, 3);
+    bot.sendMessage({id: '3p92Qdl8Vg5pW1k9aRkJwg=='}, msg);
 
+    console.log('viber', req.body)
     res.send('broadcasted')
 });
 
@@ -92,20 +103,27 @@ const INFO_KEYBOARD = {
     "Buttons": []
 };
 
-let subscribed = false;
+bot.on(BotEvents.CONVERSATION_STARTED, async (response) => {
 
-bot.on(BotEvents.CONVERSATION_STARTED, (response) => {
-    let key;
+    axios.get(process.env.API + 'viber/user/isSubscribed', {params:{
+        user_id: response.userProfile.id,
+        company : 'ua-tao'
+    }})
+    .then( (data) => {
+        let key;
+        if(data.data.user){
+            key = new TextMessage('Оберіть, що вас цікавить',SAMPLE_KEYBOARD, null, null, null, 3);
+            console.log('subscribed')
+        } else {
+            key = new TextMessage('Відправте нам свій контакт',CONTACT_KEYBOARD, null, null, null, 3);
+            console.log('NOT subscribed')
+        }
+        bot.sendMessage(response.userProfile, key);
+    })
+    .catch(function (error) {
+        console.log(error);
+    });
 
-    if(subscribed){
-        key = new TextMessage('Оберіть, що вас цікавить',SAMPLE_KEYBOARD, null, null, null, 3);
-    } else {
-        key = new TextMessage('Відправте нам свій контакт',CONTACT_KEYBOARD, null, null, null, 3);
-    }
-
-    bot.sendMessage(response.userProfile, key);
-    //subscribed = true;
-    console.log(subscribed)
 })
 
 bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
@@ -128,19 +146,13 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
             company : 'ua-tao'
         })
             .then( () => {
-                subscribed = true;
-
                 const msg = new TextMessage('Обери, що тебе цікавить:', SAMPLE_KEYBOARD, null, null, null, 3);
-
                 bot.sendMessage(response.userProfile, msg, ['keyboard']);
-                console.log('subscribed',subscribed);
             })
             .catch(function (error) {
                 console.log(error);
             });
     }
-
-    const x = new UrlMessage('viber://pa?chatURI=ua-tao');
 
     if (message.text === 'kb:home'){
         const msg = new TextMessage('Обери, що тебе цікавить:', SAMPLE_KEYBOARD, null, null, null, 3);
@@ -152,7 +164,7 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
 
     if(message.trackingData[0] === 'keyboard' && message.text.includes('kb:') || message.text === 'kb:info'){
         let menu;
-        let keys = [];
+
         INFO_KEYBOARD.Buttons = [];
 
         menu = await knex('menu_items')
@@ -167,20 +179,14 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
         for(let btn of menu){
             if(btn.parent_id == id){
                 INFO_KEYBOARD.Buttons.push({
-                    //"Columns": 3,
-                    //"Rows": 1,
                     "BgColor": "#dcdcdc",
-                    //"BgLoop": true,
                     "ActionType": "reply",
                     "ActionBody": "kb:"+btn.id,
                     "Text": btn.title,
                 })
             }  else if(!btn.parent_id && btn.id != id && id == 'info'){
                 INFO_KEYBOARD.Buttons.push({
-                    //"Columns": 3,
-                    //"Rows": 1,
                     "BgColor": "#dcdcdc",
-                    //"BgLoop": true,
                     "ActionType": "reply",
                     "ActionBody": "kb:"+btn.id,
                     "Text": btn.title,
@@ -218,7 +224,6 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
                 },
             )
         } else {
-            console.log(parent.parent_id)
             INFO_KEYBOARD.Buttons.push
             (
                 {
@@ -241,27 +246,32 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
         }
 
         let text = id === 'info' ? 'Обери, що тебе цікавить:' : menu.find(x => x.id == id)
-        //const key = new KeyboardMessage(SAMPLE_KEYBOARD, null, null, null, 3);
         const msg = new TextMessage(text.text || text, INFO_KEYBOARD, null, null, null, 3);
 
         bot.sendMessage(response.userProfile, msg, ['keyboard']);
     } else {
-        bot.sendMessage(response.userProfile, new TextMessage('Відправте нам свій контакт',CONTACT_KEYBOARD, null, null, null, 3));
+        axios.get(process.env.API + 'viber/user/isSubscribed', {params:{
+                user_id: response.userProfile.id,
+                company : 'ua-tao'
+            }})
+            .then( (data) => {
+                let key;
+                if(data.data.user){
+                    key = new TextMessage('Оберіть, що вас цікавить',SAMPLE_KEYBOARD, null, null, null, 3);
+                } else {
+                    key = new TextMessage('Відправте нам свій контакт',CONTACT_KEYBOARD, null, null, null, 3);
+                }
+                bot.sendMessage(response.userProfile, key);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     }
-
-
-
-    //console.log(INFO_KEYBOARD.Buttons)
-    //console.log(message.trackingData[0])
-    //console.log(message)
-
 });
 
 bot.onUnsubscribe((userId) => {
-    subscribed = false
     console.log(`Unsubscribed: ${userId}`)
 });
 
 router.use("/", bot.middleware());
-
 module.exports = router;
