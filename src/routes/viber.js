@@ -167,12 +167,16 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
 
         keyboard.viber_info_btns.Buttons = [];
 
-        menu = await knex('menu_items')
-            .where('menu_id',2)
-            .then(rows => {
-                //myCache.set( "menu", rows, 12000 )
-                return rows;
-            }).catch( err => console.log(err) );
+        menu = await axios.get(process.env.API + 'menu', {params:{
+                company : 'ua-tao'
+            }})
+            .then( (data) => {
+                //myCache.set( "menu", data, 12000 )
+                return data.data;
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
 
         let id = message.text.slice(3);
 

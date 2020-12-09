@@ -213,12 +213,23 @@ if(data !== 'operator' && data !== 'home'){
         menu = myCache.get( "menu" )
         console.log('cache')
     } else{
-        menu = await knex('menu_items')
+       /* menu = await knex('menu_items')
             .where('menu_id',2)
             .then(rows => {
                 myCache.set( "menu", rows, 12000 )
                 return rows;
-            }).catch( err => console.log(err) );
+            }).catch( err => console.log(err) );*/
+
+        menu = await axios.get(process.env.API + 'menu', {params:{
+                company : 'ua-tao'
+            }})
+            .then( (data) => {
+                myCache.set( "menu", data, 12000 )
+                return data.data;
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     }
 
     for(let btn of menu){
