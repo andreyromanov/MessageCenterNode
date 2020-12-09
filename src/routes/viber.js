@@ -50,7 +50,7 @@ router.post('/cms-notification', async (req,res) => {
     const messages = JSON.parse(req.body.data);
 
     messages.forEach(function(msg){
-        queue.request((retry) => bot.sendMessage({id: msg.dialog}, new TextMessage(msg.text, SAMPLE_KEYBOARD, null, null, null, 3))
+        queue.request((retry) => bot.sendMessage({id: msg.dialog}, new TextMessage(msg.text, keyboard.viber_home_btns, null, null, null, 3))
             .then(()=>{
             })
             .catch(error => {
@@ -62,14 +62,14 @@ router.post('/cms-notification', async (req,res) => {
     });
 
     //debug
-    const msg = new TextMessage('Рассылка уведомлений', SAMPLE_KEYBOARD, null, null, null, 3);
+    const msg = new TextMessage('Рассылка уведомлений', keyboard.viber_home_btns, null, null, null, 3);
     bot.sendMessage({id: '3p92Qdl8Vg5pW1k9aRkJwg=='}, msg);
 
     console.log('viber', req.body)
     res.send('broadcasted')
 });
 
-const SAMPLE_KEYBOARD = {
+/*const SAMPLE_KEYBOARD = {
     "Type": "keyboard",
     "Revision": 1,
     "Buttons": keyboard.viber_home_btns
@@ -101,7 +101,7 @@ const INFO_KEYBOARD = {
     "Type": "keyboard",
     "Revision": 1,
     "Buttons": []
-};
+};*/
 
 bot.on(BotEvents.CONVERSATION_STARTED, async (response) => {
 
@@ -112,10 +112,10 @@ bot.on(BotEvents.CONVERSATION_STARTED, async (response) => {
     .then( (data) => {
         let key;
         if(data.data.user){
-            key = new TextMessage('Оберіть, що вас цікавить',SAMPLE_KEYBOARD, null, null, null, 3);
+            key = new TextMessage('Оберіть, що вас цікавить',keyboard.viber_home_btns, null, null, null, 3);
             console.log('subscribed')
         } else {
-            key = new TextMessage('Відправте нам свій контакт',CONTACT_KEYBOARD, null, null, null, 3);
+            key = new TextMessage('Відправте нам свій контакт',keyboard.viber_contact_btn, null, null, null, 3);
             console.log('NOT subscribed')
         }
         bot.sendMessage(response.userProfile, key);
@@ -146,8 +146,8 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
             company : 'ua-tao'
         })
             .then( () => {
-                const msg = new TextMessage('Обери, що тебе цікавить:', SAMPLE_KEYBOARD, null, null, null, 3);
-                bot.sendMessage(response.userProfile, msg, ['keyboard']);
+                //const msg = new TextMessage('Обери, що тебе цікавить:', keyboard.viber_home_btns, null, null, null, 3);
+                //bot.sendMessage(response.userProfile, msg, ['keyboard']);
             })
             .catch(function (error) {
                 console.log(error);
@@ -155,7 +155,7 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
     }
 
     if (message.text === 'kb:home'){
-        const msg = new TextMessage('Обери, що тебе цікавить:', SAMPLE_KEYBOARD, null, null, null, 3);
+        const msg = new TextMessage('Обери, що тебе цікавить:', keyboard.viber_home_btns, null, null, null, 3);
         bot.sendMessage(response.userProfile, msg);
         return;
     } else if (message.text === 'viber://pa?chatURI=ua-tao'){
@@ -165,7 +165,7 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
     if(message.trackingData[0] === 'keyboard' && message.text.includes('kb:') || message.text === 'kb:info'){
         let menu;
 
-        INFO_KEYBOARD.Buttons = [];
+        keyboard.viber_info_btns.Buttons = [];
 
         menu = await knex('menu_items')
             .where('menu_id',2)
@@ -178,14 +178,14 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
 
         for(let btn of menu){
             if(btn.parent_id == id){
-                INFO_KEYBOARD.Buttons.push({
+                keyboard.viber_info_btns.Buttons.push({
                     "BgColor": "#dcdcdc",
                     "ActionType": "reply",
                     "ActionBody": "kb:"+btn.id,
                     "Text": btn.title,
                 })
             }  else if(!btn.parent_id && btn.id != id && id == 'info'){
-                INFO_KEYBOARD.Buttons.push({
+                keyboard.viber_info_btns.Buttons.push({
                     "BgColor": "#dcdcdc",
                     "ActionType": "reply",
                     "ActionBody": "kb:"+btn.id,
@@ -197,14 +197,14 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
         let parent = menu.find(x => x.id == id)
 
         if(parent === undefined){
-            INFO_KEYBOARD.Buttons.push({
+            keyboard.viber_info_btns.Buttons.push({
                 "BgColor": "#dcdcdc",
                 "ActionType": "reply",
                 "ActionBody": 'kb:home',
                 "Text": 'Назад',
             })
         } else if(parent.parent_id == null){
-            INFO_KEYBOARD.Buttons.push
+            keyboard.viber_info_btns.Buttons.push
             (
                 {
                     "Columns": 3,
@@ -224,7 +224,7 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
                 },
             )
         } else {
-            INFO_KEYBOARD.Buttons.push
+            keyboard.viber_info_btns.Buttons.push
             (
                 {
                     "Columns": 3,
@@ -246,7 +246,7 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
         }
 
         let text = id === 'info' ? 'Обери, що тебе цікавить:' : menu.find(x => x.id == id)
-        const msg = new TextMessage(text.text || text, INFO_KEYBOARD, null, null, null, 3);
+        const msg = new TextMessage(text.text || text, keyboard.viber_info_btns, null, null, null, 3);
 
         bot.sendMessage(response.userProfile, msg, ['keyboard']);
     } else {
@@ -257,9 +257,9 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
             .then( (data) => {
                 let key;
                 if(data.data.user){
-                    key = new TextMessage('Оберіть, що вас цікавить',SAMPLE_KEYBOARD, null, null, null, 3);
+                    key = new TextMessage('Оберіть, що вас цікавить',keyboard.viber_home_btns, null, null, null, 3);
                 } else {
-                    key = new TextMessage('Відправте нам свій контакт',CONTACT_KEYBOARD, null, null, null, 3);
+                    key = new TextMessage('Відправте нам свій контакт',keyboard.viber_contact_btn, null, null, null, 3);
                 }
                 bot.sendMessage(response.userProfile, key);
             })

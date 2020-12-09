@@ -86,19 +86,67 @@ module.exports = {
         "TextSize": "regular"
         }
     ],
-    viber_contact_btns : [
-        {
-            "Columns": 6,
-            "Rows": 1,
-            "BgColor": "#2db9d3",
-            "BgLoop": true,
-            "ActionType": "share-phone",
-            "ActionBody": "phone_reply",
-            "Text": "Контакт",
-            "TextVAlign": "middle",
-            "TextHAlign": "center",
-            "TextOpacity": 60,
-            "TextSize": "regular"
-        }
-    ]
+
+    viber_contact_btn : {
+        "Type": "keyboard",
+        "Revision": 1,
+        "Buttons": [
+            {
+                "Columns": 6,
+                "Rows": 1,
+                "BgColor": "#2db9d3",
+                "BgLoop": true,
+                "ActionType": "share-phone",
+                "ActionBody": "phone_reply",
+                "Text": "Контакт",
+                "TextVAlign": "middle",
+                "TextHAlign": "center",
+                "TextOpacity": 60,
+                "TextSize": "regular"
+            }
+        ]
+
+    },
+    viber_home_btns : {
+        "Type": "keyboard",
+        "Revision": 1,
+        "Buttons": [
+            {
+                "Columns": 3,
+                "Rows": 1,
+                "BgColor": "#dcdcdc",
+                "BgLoop": true,
+                "ActionType": "reply",
+                "ActionBody": "kb:info",
+                "Text": "Довідка",
+                "TextVAlign": "middle",
+                "TextHAlign": "center",
+                "TextOpacity": 60,
+                "TextSize": "regular"
+            },
+            {
+                "Columns": 3,
+                "Rows": 1,
+                "BgColor": "#dcdcdc",
+                "BgLoop": true,
+                "ActionType": "open-url",
+                "ActionBody": "viber://pa?chatURI=ua-tao",
+                "Text": "Оператор",
+                "TextVAlign": "middle",
+                "TextHAlign": "center",
+                "TextOpacity": 60,
+                "TextSize": "regular"
+            }
+        ]
+
+    },
+
+    viber_info_btns : {
+        "Type": "keyboard",
+        "Revision": 1,
+        "Buttons": [
+
+        ]
+
+    },
 }
