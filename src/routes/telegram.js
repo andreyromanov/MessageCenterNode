@@ -213,14 +213,14 @@ if(data !== 'operator' && data !== 'home'){
         menu = myCache.get( "menu" )
         console.log('cache')
     } else{
-       /* menu = await knex('menu_items')
-            .where('menu_id',2)
+        menu = await knex('menu_items')
+            .where('menu_id', process.env.UATAO_MENU_ID)
             .then(rows => {
                 myCache.set( "menu", rows, 12000 )
                 return rows;
-            }).catch( err => console.log(err) );*/
+            }).catch( err => console.log(err) );
 
-        menu = await axios.get(process.env.API + 'menu', {params:{
+/*        menu = await axios.get(process.env.API + 'menu', {params:{
                 company : 'ua-tao'
             }})
             .then( (data) => {
@@ -229,9 +229,9 @@ if(data !== 'operator' && data !== 'home'){
             })
             .catch(function (error) {
                 console.log(error);
-            });
+            });*/
     }
-
+    console.log(menu)
     for(let btn of menu){
         if(btn.parent_id == data){
             keys.push([{
