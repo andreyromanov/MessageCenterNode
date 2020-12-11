@@ -209,29 +209,31 @@ if(data !== 'operator' && data !== 'home'){
     let menu;
     let keys = [];
 
+    let axios_data;
+
     if(myCache.has( "menu" )){
         menu = myCache.get( "menu" )
         console.log('cache')
     } else{
-        menu = await knex('menu_items')
+        /*menu = await knex('menu_items')
             .where('menu_id', process.env.UATAO_MENU_ID)
             .then(rows => {
                 myCache.set( "menu", rows, 12000 )
                 return rows;
-            }).catch( err => console.log(err) );
+            }).catch( err => console.log(err) );*/
 
-/*        menu = await axios.get(process.env.API + 'menu', {params:{
+        await axios.get(process.env.API + 'menu', {params:{
                 company : 'ua-tao'
             }})
             .then( (data) => {
-                myCache.set( "menu", data, 12000 )
-                return data.data;
+                myCache.set( "menu", data.data, 12000 )
+                menu = data.data;
             })
             .catch(function (error) {
                 console.log(error);
-            });*/
+            });
     }
-    console.log(menu)
+
     for(let btn of menu){
         if(btn.parent_id == data){
             keys.push([{
@@ -322,5 +324,17 @@ bot.sendMessage(391175023, 'Launched bot').catch((error) => {
         //Do action ...
     }
 });
+
+/*
+axios.get(process.env.API + 'menu?company=bao'/!*, {params:{
+                company : 'ua-tao'
+            }}*!/)
+    .then( (data) => {
+        console.log(data.data)
+    })
+    .catch(function (error) {
+        console.log(error);
+    });
+*/
 
 module.exports = router;
