@@ -17,6 +17,10 @@ app.listen(port, () => {
     console.log(`running on port: 3000`);
 });
 
+app.get('/', async (req,res) => {
+    res.send('hello world')
+})
+
 //Import routes
 const postsRoute = require('./routes/telegram');
 const viberRoutes = require('./routes/viber');

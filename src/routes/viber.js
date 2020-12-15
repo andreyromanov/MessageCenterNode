@@ -69,6 +69,10 @@ router.post('/cms-notification', async (req,res) => {
     res.send('broadcasted')
 });
 
+router.get('/', async (req,res) => {
+    res.send('viber check')
+})
+
 /*const SAMPLE_KEYBOARD = {
     "Type": "keyboard",
     "Revision": 1,

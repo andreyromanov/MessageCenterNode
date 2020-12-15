@@ -50,7 +50,7 @@ const axios = require('axios');
 
 //получение внешних запросов
 router.get('/', async (req,res) => {
-    res.send('get request')
+    res.send('get request new')
     bot.sendMessage(391175023, 'Get request').catch((error) => {
         let code = error.response.body.error_code;
 
