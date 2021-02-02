@@ -6,6 +6,7 @@ module.exports = function isAuthorized(req, res, next) {
     } else if (req.header('x-viber-content-signature') && req.header('host') === process.env.ORIGIN) {
         next();
     } else {
+        console.log(req.headers)
         res.status(401).send('Unauthorized');
     }
 };
