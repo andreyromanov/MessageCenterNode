@@ -24,7 +24,8 @@ app.get('/', async (req,res) => {
 //Import routes
 const postsRoute = require('./routes/telegram');
 const viberRoutes = require('./routes/viber');
+const apiUatao = require('./routes/api');
 
 app.use('/telegram', bodyParser.json(), postsRoute);
-
 app.use('/viber', viberRoutes);
+app.use('/apiUatao', bodyParser.json(), apiUatao);

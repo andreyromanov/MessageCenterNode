@@ -2,8 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 
-const bodyParser = require('body-parser')
-
 const helper = require('../helpers')
 const keyboard = require('../keyboard')
 const bot = require('../bots').telegram_bot
@@ -49,7 +47,8 @@ const queue = new Queue({
 const axios = require('axios');
 
 //получение внешних запросов
-router.get('/', async (req,res) => {
+//test request
+/*router.get('/', async (req,res) => {
     res.send('get request new')
     bot.sendMessage(391175023, 'Get request').catch((error) => {
         let code = error.response.body.error_code;
@@ -59,9 +58,9 @@ router.get('/', async (req,res) => {
             //Do action ...
         }
     });
-});
-
+});*/
 //send info to users
+//todo Move /cms-notification to api.js file
 router.post('/cms-notification', async (req,res) => {
 
     const messages = JSON.parse(req.body.data);
@@ -106,40 +105,6 @@ router.post('/cms-notification', async (req,res) => {
     res.send('broadcasted')
 });
 
-router.post('/', async (req,res) => {
-    let users;
-
-    if(myCache.has( "users" )){
-        users = myCache.get( "users" )
-        console.log('cache-users')
-    } else{
-        users = await knex.select().table('telegram_users')
-            .then(rows => {
-                myCache.set( "users", rows, 12000 )
-                return rows;
-            }).catch( err => console.log(err) );
-
-    }
-    let keyName1 = req.body;
-
-    keyName1.forEach(function(item){
-        let user = users.find(x => x.phone == item.phone)
-        //console.log(item.phone, user.user_id)
-        if(user){
-            queue.request((retry) => bot.sendMessage(user.user_id, item.text)
-                .catch(error => {
-                    if (error.response.status === 429) { // We've got 429 - too many requests
-                        return retry(error.response.data.parameters.retry_after) // usually 300 seconds
-                    }
-                    throw error; // throw error further
-                }), user.user_id, 'broadcast');
-        }
-    })
-
-    //send response to server
-    res.send('posted')
-});
-
 //USER ENTERS CHAT
 bot.on("text", msg => {
     let { text } = msg;
@@ -168,7 +133,7 @@ bot.on("text", msg => {
     }
 
 });
-
+//USER SENDS CONTACT
 bot.on("contact",(msg)=>{
     bot.sendMessage(helper.getChatId(msg), `Дякую!`, {
         reply_markup: {
@@ -199,7 +164,7 @@ bot.on("contact",(msg)=>{
         })
     })
 });
-
+//USER PUSHES MENU BUTTONS
 bot.on('callback_query', async query => {
 const { data } = query;
 const { id } = query.message.chat;
@@ -324,17 +289,5 @@ bot.sendMessage(391175023, 'Launched bot').catch((error) => {
         //Do action ...
     }
 });
-
-/*
-axios.get(process.env.API + 'menu?company=bao'/!*, {params:{
-                company : 'ua-tao'
-            }}*!/)
-    .then( (data) => {
-        console.log(data.data)
-    })
-    .catch(function (error) {
-        console.log(error);
-    });
-*/
 
 module.exports = router;

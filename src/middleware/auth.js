@@ -1,11 +1,11 @@
+require('dotenv').config();
+
 module.exports = function isAuthorized(req, res, next) {
     if (req.get("Authorization") === "12345") {
-        // user is authenticated
+        next();
+    } else if (req.header('x-viber-content-signature') && req.header('host') === process.env.ORIGIN) {
         next();
     } else {
-        // return unauthorized
-        console.log(req.originalUrl)
-        next();
-        //res.status(401).send('Unauthorized');
+        res.status(401).send('Unauthorized');
     }
 };
