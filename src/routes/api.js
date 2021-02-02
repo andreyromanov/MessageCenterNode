@@ -46,6 +46,8 @@ const queue = new Queue({
     }
 });
 
+const {getPhoneNumber} = require('../helpers');
+
 router.get('/', async (req,res) => {
     res.send('get request new')
     bot.sendMessage(391175023, 'Get request').catch((error) => {
@@ -78,13 +80,16 @@ router.post('/', async (req,res) => {
         }
 
         keyName1.forEach(function(item){
-            let user = users.find(x => x.phone == item.phone)
-            if(user){
+            let user = users.find(x => getPhoneNumber(x.phone) === getPhoneNumber(item.phone))
+
+            if(user && typeof user !== 'undefined'){
+                console.log('find',user.user_id)
                 queue.request((retry) => bot.sendMessage(user.user_id, item.text)
                     .catch(error => {
                         if (error.response.status === 429) { // We've got 429 - too many requests
                             return retry(error.response.data.parameters.retry_after) // usually 300 seconds
                         }
+                        console.log('error',user.user_id, getPhoneNumber(x.phone), getPhoneNumber(item.phone))
                         throw error; // throw error further
                     }), user.user_id, 'broadcast');
 
@@ -105,7 +110,7 @@ router.post('/', async (req,res) => {
         }
 
         keyName1.forEach(function(item){
-            let viberUser = viberUsers.find(x => x.phone == item.phone)
+            let viberUser = viberUsers.find(x => getPhoneNumber(x.phone) === getPhoneNumber(item.phone))
             if(viberUser){
                 queue.request((retry) => botViber.sendMessage({id: viberUser.user_id}, new TextMessage(item.text, keyboard.viber_home_btns, null, null, null, 3))
                     .then(()=>{
