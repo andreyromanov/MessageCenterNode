@@ -281,7 +281,8 @@ if(data !== 'operator' && data !== 'home'){
 bot.on('polling_error', (error) => {
     //console.log(error);  // => 'EFATAL'
 });
-bot.sendMessage(391175023, 'Launched bot').catch((error) => {
+bot.sendMessage(391175023, 'Launched bot1').catch((error) => {
+    console.log(error)
     let code = error.response.body.error_code;
 
     if(code === 403){

@@ -130,17 +130,4 @@ router.post('/', async (req,res) => {
     }
 });
 
-//debug
-bot.on('polling_error', (error) => {
-    //console.log(error);  // => 'EFATAL'
-});
-bot.sendMessage(391175023, 'Launched bot').catch((error) => {
-    let code = error.response.body.error_code;
-
-    if(code === 403){
-        console.log(code, 'User has blocked bot (unsubscribed)');
-        //Do action ...
-    }
-});
-
 module.exports = router;
