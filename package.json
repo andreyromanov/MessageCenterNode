@@ -22,6 +22,8 @@
     "ngrok": "^3.2.7",
     "node-cache": "^5.1.2",
     "node-telegram-bot-api": "^0.40.0",
+    "pino": "^6.11.3",
+    "pino-pretty": "^5.0.2",
     "smart-request-balancer": "^2.1.1",
     "telegraf": "^3.38.0",
     "viber-bot": "^1.0.14"

@@ -45,10 +45,11 @@ const queue = new Queue({
 });
 
 const axios = require('axios');
+const logger = require('../logger');
 
 //получение внешних запросов
 //test request
-/*router.get('/', async (req,res) => {
+/*router.geet('/', async (req,res) => {
     res.send('get request new')
     bot.sendMessage(391175023, 'Get request').catch((error) => {
         let code = error.response.body.error_code;
@@ -101,7 +102,7 @@ router.post('/cms-notification', async (req,res) => {
             //Do action ...
         }
     });
-    console.log('telegram', req.body)
+    logger.info(`TELEGRAM BROADCAST - ${JSON.stringify(req.body)}`)
     res.send('broadcasted')
 });
 
@@ -140,7 +141,7 @@ bot.on("contact",(msg)=>{
             remove_keyboard: true
         }
     }).then(()=>{
-        axios.post(process.env.API + 'telegram/user/store', {
+        let data = {
             user_id: msg.contact.user_id,
             first_name: msg.contact.first_name,
             last_name : msg.contact.last_name,
@@ -149,12 +150,13 @@ bot.on("contact",(msg)=>{
             register_date : msg.date,
             status : 1,
             company : 'ua-tao'
-        })
+        };
+        axios.post(process.env.API + 'telegram/user/store', data)
             .then(function (response) {
-                console.log(response.data);
+                logger.info(`NEW USER - ${JSON.stringify(data)}`)
             })
             .catch(function (error) {
-                console.log(error);
+                logger.error(`NEW USER ERROR - ${JSON.stringify(data)}`)
             });
 
         bot.sendMessage(helper.getChatId(msg), `Головне меню`, {
@@ -280,6 +282,7 @@ if(data !== 'operator' && data !== 'home'){
 //debug
 bot.on('polling_error', (error) => {
     //console.log(error);  // => 'EFATAL'
+    logger.error(`polling_error - ${JSON.stringify(error)}`)
 });
 bot.sendMessage(391175023, 'Launched bot1').catch((error) => {
     console.log(error)

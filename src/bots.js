@@ -2,7 +2,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 //polling
 const telegram_bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {polling: true});
-console.log(process.env.TELEGRAM_TOKEN)
 //webhook
 /*const url = 'https://18c8cca0740c.ngrok.io/posts';
 const bot = new TelegramBot(process.env.TELEGRAM_TOKEN);
@@ -12,7 +11,6 @@ router.post(`/bot${process.env.TELEGRAM_TOKEN}`, (req, res) => {
     bot.processUpdate(req.body);
     res.sendStatus(200);
 });*/
-//webhook
 
 //VIBER
 const ViberBot = require('viber-bot').Bot;
