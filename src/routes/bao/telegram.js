@@ -2,9 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 
-const helper = require('../helpers')
-const keyboard = require('../keyboard')
-const bot = require('../bots').telegram_bot
+const helper = require('../../helpers')
+const keyboard = require('../../keyboard')
+const bot = require('../../bots').bao_telegram_bot
 
 const knex = require('knex')({
     client: 'mysql',
@@ -45,21 +45,8 @@ const queue = new Queue({
 });
 
 const axios = require('axios');
-const logger = require('../logger');
+const logger = require('../../logger');
 
-//получение внешних запросов
-//test request
-/*router.geet('/', async (req,res) => {
-    res.send('get request new')
-    bot.sendMessage(391175023, 'Get request').catch((error) => {
-        let code = error.response.body.error_code;
-
-        if(code === 403){
-            console.log(code, 'User has bloced bot (unsubscribed)');
-            //Do action ...
-        }
-    });
-});*/
 //send info to users
 //todo Move /cms-notification to api.js file
 router.post('/cms-notification', async (req,res) => {
@@ -149,14 +136,16 @@ bot.on("contact",(msg)=>{
             language : msg.from.language_code,
             register_date : msg.date,
             status : 1,
-            company_name : 'ua-tao'
+            company_name : 'bao'
         };
         axios.post(process.env.API + 'telegram/user/store', data)
             .then(function (response) {
+                console.log(response)
                 logger.info(`NEW USER - ${JSON.stringify(data)}`)
             })
             .catch(function (error) {
-                logger.error(`NEW USER ERROR - ${JSON.stringify(data)}`)
+                console.log(error)
+                logger.error(`NEW USER ERROR - ${JSON.stringify(error)}`)
             });
 
         bot.sendMessage(helper.getChatId(msg), `Головне меню`, {
@@ -168,95 +157,95 @@ bot.on("contact",(msg)=>{
 });
 //USER PUSHES MENU BUTTONS
 bot.on('callback_query', async query => {
-const { data } = query;
-const { id } = query.message.chat;
+    const { data } = query;
+    const { id } = query.message.chat;
 
-if(data !== 'operator' && data !== 'home'){
+    if(data !== 'operator' && data !== 'home'){
 
-    let menu;
-    let keys = [];
+        let menu;
+        let keys = [];
 
-    let axios_data;
+        let axios_data;
 
-    if(myCache.has( "menu" )){
-        menu = myCache.get( "menu" )
-        console.log('cache')
-    } else{
-        /*menu = await knex('menu_items')
-            .where('menu_id', process.env.UATAO_MENU_ID)
-            .then(rows => {
-                myCache.set( "menu", rows, 12000 )
-                return rows;
-            }).catch( err => console.log(err) );*/
+        if(myCache.has( "menu" )){
+            menu = myCache.get( "menu" )
+            console.log('cache')
+        } else{
+            /*menu = await knex('menu_items')
+                .where('menu_id', process.env.UATAO_MENU_ID)
+                .then(rows => {
+                    myCache.set( "menu", rows, 12000 )
+                    return rows;
+                }).catch( err => console.log(err) );*/
 
-        await axios.get(process.env.API + 'menu', {params:{
-                company : 'ua-tao'
-            }})
-            .then( (data) => {
-                myCache.set( "menu", data.data, 12000 )
-                menu = data.data;
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-    }
-
-    for(let btn of menu){
-        if(btn.parent_id == data){
-            keys.push([{
-                text: btn.title,
-                callback_data: btn.id
-            }])
-        }  else if(!btn.parent_id && btn.id != data && data == 'info'){
-            keys.push([{
-                text: btn.title,
-                callback_data: btn.id
-            }])
+            await axios.get(process.env.API + 'menu', {params:{
+                    company : 'bao'
+                }})
+                .then( (data) => {
+                    myCache.set( "menu", data.data, 12000 )
+                    menu = data.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
         }
-    }
-    let parent = menu.find(x => x.id == data)
 
-    if(parent === undefined){
-        keys.push([
-            {
-                text: 'Назад',
-                callback_data: 'home'
+        for(let btn of menu){
+            if(btn.parent_id == data){
+                keys.push([{
+                    text: btn.title,
+                    callback_data: btn.id
+                }])
+            }  else if(!btn.parent_id && btn.id != data && data == 'info'){
+                keys.push([{
+                    text: btn.title,
+                    callback_data: btn.id
+                }])
             }
-        ])
-    } else if(parent.parent_id == null){
-        keys.push([
-            {
-                text: 'Назад',
-                callback_data: 'info'
-            },
-            {
-                text: 'Головна',
-                callback_data: 'home'
-            }
-        ])
-    } else {
-        keys.push([
-            {
-                text: 'Назад',
-                callback_data: parent.parent_id
-            },
-            {
-                text: 'Головна',
-                callback_data: 'home'
-            }
-        ])
-    }
-
-    let text = data === 'info' ? 'Обери, що тебе цікавить:' : menu.find(x => x.id == data)
-
-    bot.deleteMessage(id, query.message.message_id)
-
-    bot.sendMessage(id, text.text || text, {
-        reply_markup: {
-            inline_keyboard: keys
         }
-    })
-}
+        let parent = menu.find(x => x.id == data)
+
+        if(parent === undefined){
+            keys.push([
+                {
+                    text: 'Назад',
+                    callback_data: 'home'
+                }
+            ])
+        } else if(parent.parent_id == null){
+            keys.push([
+                {
+                    text: 'Назад',
+                    callback_data: 'info'
+                },
+                {
+                    text: 'Головна',
+                    callback_data: 'home'
+                }
+            ])
+        } else {
+            keys.push([
+                {
+                    text: 'Назад',
+                    callback_data: parent.parent_id
+                },
+                {
+                    text: 'Головна',
+                    callback_data: 'home'
+                }
+            ])
+        }
+
+        let text = data === 'info' ? 'Обери, що тебе цікавить:' : menu.find(x => x.id == data)
+
+        bot.deleteMessage(id, query.message.message_id)
+
+        bot.sendMessage(id, text.text || text, {
+            reply_markup: {
+                inline_keyboard: keys
+            }
+        })
+    }
     switch (data) {
         case 'operator':
             bot.editMessageText( `Перейдіть для звя'зку з оператором: @uatao_bot`, {

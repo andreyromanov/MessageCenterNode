@@ -2,6 +2,8 @@
 const TelegramBot = require('node-telegram-bot-api');
 //polling
 const telegram_bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {polling: true});
+
+const bao_telegram_bot = new TelegramBot(process.env.BAO_TELEGRAM_TOKEN, {polling: true});
 //webhook
 /*const url = 'https://18c8cca0740c.ngrok.io/posts';
 const bot = new TelegramBot(process.env.TELEGRAM_TOKEN);
@@ -25,4 +27,4 @@ viber_bot.setWebhook(process.env.VIBER_WEBHOOK)
     .catch(err => console.log(err));
 
 //export telegram & viber bots
-module.exports = { telegram_bot, viber_bot }
+module.exports = { telegram_bot, viber_bot, bao_telegram_bot }

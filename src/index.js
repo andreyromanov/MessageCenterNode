@@ -26,6 +26,10 @@ const postsRoute = require('./routes/telegram');
 const viberRoutes = require('./routes/viber');
 const apiUatao = require('./routes/api');
 
+const baoTelegramRoutes = require('./routes/bao/telegram');
+
 app.use('/telegram', bodyParser.json(), postsRoute);
 app.use('/viber', viberRoutes);
 app.use('/apiUatao', bodyParser.json(), apiUatao);
+
+app.use('/baoTelegram', bodyParser.json(), baoTelegramRoutes);
