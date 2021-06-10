@@ -3,7 +3,7 @@ module.exports = {
         return msg.chat.id;
     },
     debug(obj={}){
-    return JSON.stringify(obj, null, 4)
+        return JSON.stringify(obj, null, 4)
      },
     getPhoneNumber(phone){
         return phone.slice(phone.length - 5)

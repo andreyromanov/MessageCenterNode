@@ -6,16 +6,6 @@ const helper = require('../helpers')
 const keyboard = require('../keyboard')
 const bot = require('../bots').telegram_bot
 
-const knex = require('knex')({
-    client: 'mysql',
-    connection: {
-        host : process.env.HOST,
-        user : process.env.db_USER,
-        password : process.env.PASS,
-        database : process.env.DB
-    }
-});
-
 const NodeCache = require( "node-cache" );
 const myCache = new NodeCache();
 
@@ -48,34 +38,11 @@ const axios = require('axios');
 const logger = require('../logger');
 
 //получение внешних запросов
-//test request
-/*router.geet('/', async (req,res) => {
-    res.send('get request new')
-    bot.sendMessage(391175023, 'Get request').catch((error) => {
-        let code = error.response.body.error_code;
-
-        if(code === 403){
-            console.log(code, 'User has bloced bot (unsubscribed)');
-            //Do action ...
-        }
-    });
-});*/
 //send info to users
 //todo Move /cms-notification to api.js file
 router.post('/cms-notification', async (req,res) => {
 
     const messages = JSON.parse(req.body.data);
-
-    /*if(myCache.has( "users" )){
-        users = myCache.get( "users" )
-    } else{
-        users = await knex.select().table('telegram_users')
-            .then(rows => {
-                myCache.set( "users", rows, 60*60*24 )
-                return rows;
-            }).catch( err => console.log(err) );
-
-    }*/
 
     messages.forEach(function(msg){
         queue.request((retry) => bot.sendMessage(msg.dialog, msg.text)
@@ -176,19 +143,9 @@ if(data !== 'operator' && data !== 'home'){
     let menu;
     let keys = [];
 
-    let axios_data;
-
     if(myCache.has( "menu" )){
         menu = myCache.get( "menu" )
-        console.log('cache')
     } else{
-        /*menu = await knex('menu_items')
-            .where('menu_id', process.env.UATAO_MENU_ID)
-            .then(rows => {
-                myCache.set( "menu", rows, 12000 )
-                return rows;
-            }).catch( err => console.log(err) );*/
-
         await axios.get(process.env.API + 'menu', {params:{
                 company : 'ua-tao'
             }})
@@ -281,7 +238,6 @@ if(data !== 'operator' && data !== 'home'){
 
 //debug
 bot.on('polling_error', (error) => {
-    //console.log(error);  // => 'EFATAL'
     logger.error(`polling_error - ${JSON.stringify(error)}`)
 });
 bot.sendMessage(391175023, 'Launched bot1').catch((error) => {
@@ -290,7 +246,6 @@ bot.sendMessage(391175023, 'Launched bot1').catch((error) => {
 
     if(code === 403){
         console.log(code, 'User has blocked bot (unsubscribed)');
-        //Do action ...
     }
 });
 

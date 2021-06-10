@@ -2,19 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 
-const helper = require('../../helpers')
-const keyboard = require('../../keyboard')
-const bot = require('../../bots').bao_telegram_bot
-
-const knex = require('knex')({
-    client: 'mysql',
-    connection: {
-        host : process.env.HOST,
-        user : process.env.db_USER,
-        password : process.env.PASS,
-        database : process.env.DB
-    }
-});
+const helper = require('../../helpers');
+const keyboard = require('../../keyboard');
+const bot = require('../../bots').bao_telegram_bot;
 
 const NodeCache = require( "node-cache" );
 const myCache = new NodeCache();
@@ -53,17 +43,6 @@ router.post('/cms-notification', async (req,res) => {
 
     const messages = JSON.parse(req.body.data);
 
-    /*if(myCache.has( "users" )){
-        users = myCache.get( "users" )
-    } else{
-        users = await knex.select().table('telegram_users')
-            .then(rows => {
-                myCache.set( "users", rows, 60*60*24 )
-                return rows;
-            }).catch( err => console.log(err) );
-
-    }*/
-
     messages.forEach(function(msg){
         queue.request((retry) => bot.sendMessage(msg.dialog, msg.text)
             .then(()=>{
@@ -86,7 +65,6 @@ router.post('/cms-notification', async (req,res) => {
 
         if(code === 403){
             console.log(code, 'User has blocked bot (unsubscribed)');
-            //Do action ...
         }
     });
     logger.info(`TELEGRAM BROADCAST - ${JSON.stringify(req.body)}`)
@@ -140,11 +118,9 @@ bot.on("contact",(msg)=>{
         };
         axios.post(process.env.API + 'telegram/user/store', data)
             .then(function (response) {
-                console.log(response)
                 logger.info(`NEW USER - ${JSON.stringify(data)}`)
             })
             .catch(function (error) {
-                console.log(error)
                 logger.error(`NEW USER ERROR - ${JSON.stringify(error)}`)
             });
 
@@ -165,19 +141,10 @@ bot.on('callback_query', async query => {
         let menu;
         let keys = [];
 
-        let axios_data;
-
         if(myCache.has( "menu" )){
             menu = myCache.get( "menu" )
             console.log('cache')
         } else{
-            /*menu = await knex('menu_items')
-                .where('menu_id', process.env.UATAO_MENU_ID)
-                .then(rows => {
-                    myCache.set( "menu", rows, 12000 )
-                    return rows;
-                }).catch( err => console.log(err) );*/
-
             await axios.get(process.env.API + 'menu', {params:{
                     company : 'bao'
                 }})

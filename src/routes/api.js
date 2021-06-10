@@ -46,16 +46,14 @@ const queue = new Queue({
     }
 });
 
-const {getPhoneNumber} = require('../helpers');
+const { getPhoneNumber } = require('../helpers');
 
 router.get('/', async (req,res) => {
     res.send('get request new')
     bot.sendMessage(391175023, 'Get request').catch((error) => {
         let code = error.response.body.error_code;
-
         if(code === 403){
             console.log(code, 'User has bloced bot (unsubscribed)');
-            //Do action ...
         }
     });
 });
